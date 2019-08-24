@@ -6,7 +6,7 @@
 JPF_HOME=`dirname "$0"`/..
 
 if test -z "$JVM_FLAGS"; then
-  JVM_FLAGS="-Xmx1024m -ea"
+  JVM_FLAGS="-Xmx5120m -ea"
 fi
 
 java $JVM_FLAGS -jar "$JPF_HOME/build/RunTest.jar" "$@"

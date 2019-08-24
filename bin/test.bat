@@ -7,7 +7,7 @@ REM
 REM Set the JPF_HOME directory
 set JPF_HOME=%~dp0..
 
-set JVM_FLAGS=-Xmx1024m -ea
+set JVM_FLAGS=-Xmx5120m -ea
 
 java %JVM_FLAGS% -jar "%JPF_HOME%\build\RunTest.jar" %*
 
