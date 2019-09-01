@@ -666,8 +666,21 @@ public class MyListener extends PropertyListenerAdapter {
                             state.allThreadSeq.add(d.threadName);
                             state.parentId = myNode.id;
                             state.parentDepth = myNode.depth;
-                            if(d.sourceLine!=null && (d.sourceLine.contains("if") || d.sourceLine.contains("while")  || d.sourceLine.contains("for"))) {
-                                state.fType = "condition";
+                            if (VM.getVM().getConfig().get("vm.compilerop") != null && d.sourceLine != null) {
+                                d.sourceLine = d.sourceLine.trim();
+                                String fieldN = d.fieldName;
+                                if (fieldN.contains(".")) {
+                                    fieldN = fieldN.substring(fieldN.lastIndexOf(".") + 1);
+                                }
+                                if (d.sourceLine.contains("=")) {
+                                    String[] fields = d.sourceLine.split("=");
+                                    if (fields[0].contains(fieldN) && fields[1].contains(fieldN)) {
+                                        state.resetFieldRule(checkFieldRule);
+                                    }
+                                } else if (d.sourceLine.contains(fieldN + "++") || d.sourceLine.contains(fieldN + "--")) {
+                                    state.resetFieldRule(checkFieldRule);
+                                }
+
                             }
                         } else if (d.threadName.compareTo(threadN) != 0 && state.checkFieldRule.size() != 0 && state.checkFieldRule.get(0).compareTo("threadChange") == 0 && state.checkFieldRule.get(1).compareTo("writeField") == 0) {
                             if (!state.threadSeq.contains(d.threadName) && d.writeOperation) {
@@ -685,15 +698,25 @@ public class MyListener extends PropertyListenerAdapter {
                                 state.allThreadSeq.add(d.threadName);
 
                             } else if (state.threadSeq.get(0).compareTo(d.threadName) == 0 && d.readOperation) {
-                                String f2Type = null;
-                                if(d.sourceLine!=null && (d.sourceLine.contains("if") || d.sourceLine.contains("while")  || d.sourceLine.contains("for"))) {
-                                    f2Type = "condition";
+                                boolean ignore = false;
+                                if (VM.getVM().getConfig().get("vm.compilerop") != null && d.sourceLine != null) {
+                                    d.sourceLine = d.sourceLine.trim();
+                                    String fieldN = d.fieldName;
+                                    if (fieldN.contains(".")) {
+                                        fieldN = fieldN.substring(fieldN.lastIndexOf(".") + 1);
+                                    }
+                                    if (d.sourceLine.contains("=")) {
+                                        String[] fields = d.sourceLine.split("=");
+                                        if (fields[0].contains(fieldN) && fields[1].contains(fieldN)) {
+                                            ignore = true;
+                                        }
+                                    } else if (d.sourceLine.contains(fieldN + "++") || d.sourceLine.contains(fieldN + "--")) {
+                                        ignore = true;
+                                    }
                                 }
-                                
-                                if((f2Type==null && state.fType==null) || (f2Type!=null && state.fType!=null && state.fType.compareTo(f2Type)==0)) {
+                                if (!ignore) {
                                     state.resetFieldRule(checkFieldRule);
                                 }
-                                    
                             }
                         }
 
